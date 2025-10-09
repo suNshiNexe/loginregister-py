@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Response
 from database import engine 
+import models
 
 #Criar tabelas no banco de dados
-# Base.metadata.create_all(bind=engine) # descomentar next
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
