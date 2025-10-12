@@ -23,6 +23,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 def authenticate_user(db: Session, email: str, password: str):
+    # Autentica o usuário
     user = get_user_by_email(db, email)
     if not user:
         return None
