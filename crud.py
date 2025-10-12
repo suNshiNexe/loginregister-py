@@ -1,15 +1,12 @@
 from sqlalchemy.orm import Session
-
-import models
-import schemas
-import auth
+import models, schemas, auth
 
 def get_user_by_email(db: Session, email: str):
-    """Busca usuário pelo email"""
+    # Busca usuário pelo email
     return db.query(models.User).filter(models.User.email == email).first()
 
 def create_user(db: Session, user: schemas.UserCreate):
-    """Cria um novo usuário"""
+    # Cria um novo usuário
     hashed_pwd = auth.get_password_hash(user.password)
 
     db_user = models.User(
@@ -24,3 +21,13 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
 
     return db_user
+
+def authenticate_user(db: Session, email: str, password: str):
+    user = get_user_by_email(db, email)
+    if not user:
+        return None
+    
+    if not auth.verify_password(password, user.hashed_pwd):
+        return None
+    
+    return user
