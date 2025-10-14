@@ -3,11 +3,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
 
-import models
-import schemas
-import crud
-import auth
-from database import engine, get_db
+from . import models, schemas, crud, auth
+from .database import engine, get_db
 
 #Criar tabelas no banco de dados
 models.Base.metadata.create_all(bind=engine)
