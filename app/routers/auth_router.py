@@ -1,10 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, HTTPBearer
 from sqlalchemy.orm import Session
 from datetime import timedelta
 
-from .. import schemas, crud, auth
+from .. import models, schemas, crud, auth
 from ..database import get_db
+#
+bearer_scheme = HTTPBearer()
+
+def get_current_user(token: str = Depends(bearer_scheme), db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials \n Não foi possível validar as credenciais",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    payload = auth.verify_token(token.credentials, credentials_exception)
+    email: str = payload.get("sub")
+
+    user = crud.get_user_by_email(db, email=email)
+    if user is None:
+        raise credentials_exception
+    
+    return user
+# 
 
 router = APIRouter()
 
@@ -45,3 +63,13 @@ def login_for_access_token(
         access_token=access_token,
         token_type="bearer"
     )
+
+# Endpoint para obter o usuário atual
+@router.get(
+        "/users/me", 
+        response_model=schemas.User, 
+        tags=["Users"],
+        
+)
+def read_users_me(current_user: models.User = Depends(get_current_user)):
+    return current_user
